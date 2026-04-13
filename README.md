@@ -10,9 +10,6 @@ a new tenant to a large existing database can cause severe query performance
 degradation. The root cause: `autoanalyze` never fires because the new
 tenant's data is too small relative to the existing data.
 
-This reproduces a real production incident where a multi-table JOIN query went
-from **60+ minutes to 49 seconds** after running `ANALYZE`.
-
 ## Data Model
 
 ```
@@ -85,9 +82,6 @@ make clean      # Tear down
 | Query time          | ~3,700 ms      | ~10 ms        | **370x**    |
 | Buffer hits         | 21,140,362     | 28,913        | **731x**    |
 | Rows discarded      | 42,188,800     | 0             | -           |
-
-> In the real production incident with 7 tables and millions of rows,
-> the same mechanism caused a **60 min → 49 sec** improvement.
 
 ## Why autoanalyze Doesn't Help
 
