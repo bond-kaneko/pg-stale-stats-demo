@@ -85,15 +85,28 @@ make clean      # Tear down
 
 ## Why autoanalyze Doesn't Help
 
-```
-autoanalyze_threshold = autovacuum_analyze_threshold (50)
-                      + autovacuum_analyze_scale_factor (0.1) × n_live_tup
+PostgreSQL's autovacuum daemon periodically runs `ANALYZE` on tables
+that have changed significantly since the last analysis. However, the
+threshold for triggering autoanalyze is proportional to the table size:
 
-For audit_logs (2,000,000 rows):
-  threshold = 50 + 0.1 × 2,000,000 = 200,050 rows of change needed
-
-Tenant B + C add only ~10,000 rows (0.5%) → autoanalyze never fires
 ```
+threshold = autovacuum_analyze_threshold + autovacuum_analyze_scale_factor × n_live_tup
+          = 50 + 0.1 × n_live_tup
+```
+
+For a table like `audit_logs` with 2,000,000 existing rows, the threshold
+is **200,050 rows** — meaning over 200,000 rows must be inserted, updated,
+or deleted before autoanalyze kicks in.
+
+When a new tenant is onboarded, their data (e.g., 8,000 rows for Tenant C)
+represents only **0.4%** of the table. This is far below the 10% threshold,
+so autoanalyze never fires. The statistics remain frozen at the state when
+only Tenant A existed (`n_distinct=1`), and the query planner has no idea
+that new tenants have been added.
+
+This is a fundamental limitation of the default autoanalyze configuration
+in multi-tenant databases: the larger the existing data, the harder it
+becomes for a small new tenant to trigger a statistics refresh.
 
 ## Project Structure
 
