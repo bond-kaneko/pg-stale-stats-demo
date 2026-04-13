@@ -30,6 +30,9 @@ projects → tasks → comments → attachments → reviews → audit_logs
 ## Quick Start
 
 ```bash
+git clone https://github.com/bond-kaneko/pg-stale-stats-demo.git
+cd pg-stale-stats-demo
+
 make setup      # Start PostgreSQL, create schema, seed data (~2 min)
 make query      # Run query — BEFORE ANALYZE (slow, ~3.7s)
 make analyze    # Refresh statistics
