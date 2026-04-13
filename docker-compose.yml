@@ -1,0 +1,26 @@
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: demo
+      POSTGRES_USER: demo
+      POSTGRES_PASSWORD: demo
+    ports:
+      - "15432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    # Use default autovacuum settings to demonstrate that autoanalyze
+    # does NOT fire when new tenant data is below the threshold.
+    command:
+      - postgres
+      - -c
+      - shared_buffers=256MB
+      - -c
+      - work_mem=64MB
+      - -c
+      - autovacuum_naptime=10s
+      - -c
+      - log_autovacuum_min_duration=0
+
+volumes:
+  pgdata:
